@@ -1,0 +1,9 @@
+function [spec_pwr, specBinWidthHz, freqs] = extract_features_spectrogram(signal, fs)
+    specWinSeconds = 99;  % duration of spectrogram's moving window in seconds
+    specStepSeconds = 30; % how much to step the window for each output column
+    specWinSamples = round(specWinSeconds*fs);
+    specOverlapSamples = specWinSamples - round(specStepSeconds*fs);
+    specBinWidthHz = fs / specWinSamples; % compute the spectral bin width in Hz
+    specWin = hanning(specWinSamples); % window to suppress spectral sidelobes
+    [spec,freqs,times] = spectrogram(signal,specWin,specOverlapSamples,specWinSamples,fs);
+    spec_pwr = abs(spec).^2;              % notional power
