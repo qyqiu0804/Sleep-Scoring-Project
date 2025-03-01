@@ -24,8 +24,12 @@ crossv = crossval(model);
 classError = kfoldLoss(crossv)
 
 %% confusion matrix
+labels = {'N1','N2','N3','N4','REM','Wake'};
 Y_pred = kfoldPredict(crossv);
 conf_matrix = confusionmat(Y,Y_pred);
-conf_matrix_percent = conf_matrix./sum(conf_matrix,2) * 100 %put it in percents instead
-imagesc(conf_matrix_percent); 
+conf_matrix_percent = conf_matrix./sum(conf_matrix,2) * 100
+imagesc(conf_matrix_percent);
 xlabel('predicted'); ylabel('truth');
+xticklabels(labels); yticklabels(labels);
+title('Confusion matrix percentages');
+colorbar;
