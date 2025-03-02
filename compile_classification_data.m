@@ -21,10 +21,11 @@ for k = range
     %IMPORTANT SECTION
     %now these are the features we want to use in the classifier
     band_ratios = compute_band_power_ratios(spec_snr, specBinWidthHz, band_freqs); % sofia task - compute relative power of each band
-    entropy = spectralEntropy(10*log10(max(spec_snr,1)),freqs).'; %sofia task - entropy
+    %entropy = spectralEntropy(10*log10(max(spec_snr,1)),freqs).'; %sofia task - entropy
+    band_entropies = compute_band_entropies(spec_snr, specBinWidthHz, band_freqs,freqs); %sofia task- band entropy
 
     % Combine features that we will use in the classifier
-    combined_features = [band_ratios;entropy]; % Stack features
+    combined_features = [band_ratios;band_entropies]; % Stack features
 
    % Align with sleep stages
     stages_at_epoch = stages(1:epochLength:end);
