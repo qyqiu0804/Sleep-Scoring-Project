@@ -10,12 +10,12 @@ for k = range
     EEG_signal = record(EEG_channel, :);           % extract EEG signal
 
     %apply preprocessing to data
-    filtered_signal = preprocess_EEG(EEG_signal, fs);
+    filtered_EEG_signal = preprocess_EEG(EEG_signal, fs);
 
     %now extracting features
     %first we use the short time fourier to get input for features we want
     %to use
-    [spec_pwr, specBinWidthHz, freqs] = extract_features_spectrogram(filtered_signal,fs); % short time Fourier analysis
+    [spec_pwr, specBinWidthHz, freqs] = extract_features_spectrogram(filtered_EEG_signal,fs); % short time Fourier analysis
     spec_snr = spec_pwr ./ median(spec_pwr,2);     % normalization: equalize FFT bins based on their background level
     
     %IMPORTANT SECTION
