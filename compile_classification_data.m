@@ -6,20 +6,21 @@ for k = range
     [hdr, record] = edfread([datadir filesep edfFiles(k).name]); % Read EDF file
     [events, stages, epochLength, annotation] = readXML([datadir filesep xmlFiles(k).name]);
     EEG_channel = find(ismember(hdr.label,'EEG')); % find EEG channel -- should be 8
-    fs = hdr.samples(EEG_channel);                 % hdr.samples is an array of sample rates for each channel
+    fs_EEG = hdr.samples(EEG_channel);                 % hdr.samples is an array of sample rates for each channel
     EEG_signal = record(EEG_channel, :);           % extract EEG signal
 
     %apply preprocessing to data
-    filtered_EEG_signal = preprocess_EEG(EEG_signal, fs);
+    EEG_filtered_signal = preprocess_EEG(EEG_signal, fs_EEG);
 
     %now extracting features
+
+    %Starting with EEG features
     %first we use the short time fourier to get input for features we want
     %to use
-    [spec_pwr, specBinWidthHz, freqs] = extract_features_spectrogram(filtered_EEG_signal,fs); % short time Fourier analysis
-    spec_snr = spec_pwr ./ median(spec_pwr,2);     % normalization: equalize FFT bins based on their background level
-    
-    %IMPORTANT SECTION
-    %now these are the features we want to use in the classifier
+    [spec_pwr, specBinWidthHz, freqs] = extract_features_spectrogram(EEG_filtered_signal,fs_EEG); % short time Fourier analysis
+    spec_snr = spec_pwr ./ median(spec_pwr,2);     % normalization: equalize FFT bins  based on their background level
+    %IMPORTANT SECTION - call functions for EEG features to be used in
+    %classifier here
     band_ratios = compute_band_power_ratios(spec_snr, specBinWidthHz, band_freqs); % sofia task - compute relative power of each band
     %entropy = spectralEntropy(10*log10(max(spec_snr,1)),freqs).'; %sofia task - entropy
     band_entropies = compute_band_entropies(spec_snr, specBinWidthHz, band_freqs,freqs); %sofia task- band entropy
