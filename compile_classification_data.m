@@ -5,12 +5,20 @@ for k = range
     %start with reading the basics from the files
     [hdr, record] = edfread([datadir filesep edfFiles(k).name]); % Read EDF file
     [events, stages, epochLength, annotation] = readXML([datadir filesep xmlFiles(k).name]);
+    %first EEG
     EEG_channel = find(ismember(hdr.label,'EEG')); % find EEG channel -- should be 8
     fs_EEG = hdr.samples(EEG_channel);                 % hdr.samples is an array of sample rates for each channel
     EEG_signal = record(EEG_channel, :);           % extract EEG signal
-
-    %apply preprocessing to data
-    EEG_filtered_signal = preprocess_EEG(EEG_signal, fs_EEG);
+    EEG_filtered_signal = preprocess_EEG(EEG_signal, fs_EEG); %apply preprocessing
+    %now EOG
+    EOGL_channel = find(ismember(hdr.label,'EOGL')); 
+    EOGL_signal = record(EOGL_channel, :);
+    EOGR_channel = find(ismember(hdr.label,'EOGR')); 
+    EOGR_signal = record(EOGR_channel, :);
+    fs_EOG = hdr.samples(EOGL_channel) ;% 50 Hz for both eyes
+    EOG_signal = (EOGL_signal + EOGR_signal) / 2; %average the two signals
+    EOG_filtered_signal = preprocess_EOG(EOG_signal,fs_EOG);
+  
 
     %now extracting features
 
@@ -24,8 +32,8 @@ for k = range
     band_ratios = compute_band_power_ratios(spec_snr, specBinWidthHz, band_freqs); % sofia task - compute relative power of each band
     %entropy = spectralEntropy(10*log10(max(spec_snr,1)),freqs).'; %sofia task - entropy
     band_entropies = compute_band_entropies(spec_snr, specBinWidthHz, band_freqs,freqs); %sofia task- band entropy
-    %[~,peak_freq_inds] = max(spec_snr); peak_freqs = freqs(peak_freq_inds)'; %sofia task - peak frequency
-    
+    %[~,peak_freq_inds] = max(spec_snr); peak_freqs = freqs(peak_freq_inds)'; %sofia task - peak frequency,
+
     % Combine features that we will use in the classifier
     combined_features = [band_ratios;band_entropies]; % Stack features
 
