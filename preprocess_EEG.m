@@ -20,6 +20,5 @@ function filtered_signal = preprocess_EEG(EEG_signal, fs)
     [bandpass_b, bandpass_a] = butter(bandpass_filter_order, [low_cutoff, high_cutoff] / (0.5 * fs), 'bandpass');
     filtered_signal = filtfilt(bandpass_b, bandpass_a, EEG_signal_notch_filtered);
 
-    % later: add in artifact removal
-    % filtered_signal = eeg_remove_artifacts(filtered_signal, events);
+   
 end
