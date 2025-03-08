@@ -10,12 +10,16 @@ xmlFiles = dir([datadir filesep '*.xml']);
 band_freqs = [0.6,1; 0.5,4; 4,8;  8,13; 11,16; 13,30];
 
 num = length(edfFiles);
+%num = 1; %to test there's no errors without everything taking forever
 
 %% training
 % go over the training portion, and make big X and Y vectors
 [X, Y] = compile_classification_data(datadir, edfFiles, xmlFiles,band_freqs,1:num);
 
-model = fitcknn(X,Y,'NumNeighbors',22,'Standardize',1);
+%model = fitcknn(X,Y,'NumNeighbors',22,'Standardize',1);
+model =fitcknn(X,Y,'NumNeighbors',12,'Distance','cityblock','DistanceWeight','squaredinverse','Standardize',true);
+%model = fitcknn(X,Y,'NumNeighbors',8,'Distance','minkowski','DistanceWeight','squaredinverse','Exponent',0.50697,'Standardize',true);
+%model = fitcknn(X,Y,'OptimizeHyperparameters','all','HyperparameterOptimizationOptions',struct('AcquisitionFunctionName','expected-improvement-plus','MaxObjectiveEvaluations',10000,'UseParallel',true));
 
 rng(1); % For reproducibility
 
