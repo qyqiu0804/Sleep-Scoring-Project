@@ -12,25 +12,16 @@ eogZeroCross = sum(sign(a) ~= sign(b)); % count zero crossings
 
 eogRmsDiff = sqrt(sum(diff(eogMatrix).^2)); % root mean square of derivative
 
-specWinSeconds = 71;  % duration of spectrogram's moving window in seconds
-specStepSeconds = 30; % how much to step the window for each output column
-specWinSamples = round(specWinSeconds*fs);
-specOverlapSamples = specWinSamples - round(specStepSeconds*fs);
-specWin = hanning(specWinSamples); % window to suppress spectral sidelobes
-[spec,freqs,times] = spectrogram(eog,specWin,specOverlapSamples,specWinSamples,fs);
-spec = spec(:,1:num_steps);
-spec_pwr = abs(spec).^2;              % notional power
-spec_snr = spec_pwr./median(spec_pwr,2);
-
-entropy = spectralEntropy(10*log10(max(spec_snr,1)),freqs).';
+[spec_snr, entropy, binWidth, freqs] = extract_features_spectrogram(eog,fs,30,71,num_steps); % short time Fourier analysis
 entropy = smooth(entropy,5)';
 
 num_bands = 4;
 band_entropy = zeros(num_bands,length(entropy));
-band_size = round(specWinSamples/2/num_bands);
+spec_bins = size(spec_snr,1); % number of bins on one slice of a spectrum (FFT)
+band_size = round(spec_bins/num_bands);
 for k = 1:num_bands
     offset = (k-1)*band_size;
-    range = (offset+1) : min(offset+band_size,specWinSamples/2+1);
+    range = (offset+1) : min(offset+band_size,spec_bins);
     band_entropy(k,:) = smooth(spectralEntropy(10*log10(max(spec_snr(range,:),1)),freqs(range)),6).';
 end
 
