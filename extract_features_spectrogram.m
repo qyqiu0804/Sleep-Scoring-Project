@@ -1,9 +1,10 @@
-function [spec_pwr, specBinWidthHz, freqs] = extract_features_spectrogram(signal, fs)
-    specWinSeconds = 99;  % duration of spectrogram's moving window in seconds
-    specStepSeconds = 30; % how much to step the window for each output column
-    specWinSamples = round(specWinSeconds*fs);
-    specOverlapSamples = specWinSamples - round(specStepSeconds*fs);
-    specBinWidthHz = fs / specWinSamples; % compute the spectral bin width in Hz
-    specWin = hanning(specWinSamples); % window to suppress spectral sidelobes
+function [spec_snr, entropy, specBinWidthHz, freqs] = extract_features_spectrogram(signal, fs, stepSeconds, winSeconds, numSteps)
+    specWinSamples = round(winSeconds*fs);
+    specOverlapSamples = specWinSamples - round(stepSeconds*fs);
+    specBinWidthHz = fs/specWinSamples;   % width of spectrum FFT bin in Hz
+    specWin = hanning(specWinSamples);    % window to suppress spectral sidelobes
     [spec,freqs,times] = spectrogram(signal,specWin,specOverlapSamples,specWinSamples,fs);
+    if nargin>4, spec = spec(:,1:numSteps); end % chop off end of spectrogram if requested (like for eog where it is blank)
     spec_pwr = abs(spec).^2;              % notional power
+    spec_snr = spec_pwr ./ max(median(spec_pwr,2),1e-6); % normalization: equalize FFT bins based on their background level
+    entropy = spectralEntropy(10*log10(max(spec_snr,1)),freqs).';
