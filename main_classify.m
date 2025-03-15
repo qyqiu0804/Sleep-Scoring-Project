@@ -3,8 +3,11 @@ addpath('Scripts'); % Set the folder path containing the scripts
 
 % Specify the path to your EDF and XML files
 datadir = 'Data';
-edfFiles = dir([datadir filesep '*.edf']); 
-xmlFiles = dir([datadir filesep '*.xml']);
+edfFiles = dir([datadir '/*.edf']);
+edfFiles = edfFiles(~startsWith({edfFiles.name}, '~$'));
+xmlFiles = dir([datadir '/*.xml']);
+xmlFiles = xmlFiles(~startsWith({xmlFiles.name}, '~$'));
+
 
 % specify the frequencies of each wave type to use in the functions below
 band_freqs = [0.6,1; 0.5,4; 4,8;  8,13; 11,16; 13,30];
