@@ -20,10 +20,16 @@ function eeg_features = extract_features_eeg(EEG_filtered_signal, fs, band_freqs
     % Extract time-frequency features
     time_freq_features = extract_time_frequency_features(EEG_filtered_signal, fs, 99, 30);
 
-    % AR Model Feature Extraction
-    ar_features = extract_ar_features(EEG_filtered_signal, fs);
+% AR Model Feature Extraction
+ar_features = extract_ar_features(EEG_filtered_signal, fs);
 
-    % Combine extracted features into a single output
-    eeg_features = [band_ratios; entropy; peak_freqs; band_entropies; time_freq_features'; ar_features];
+% Pad ar_features to match other feature dimensions (if needed)
+target_len = size(time_freq_features', 2); 
 
+if length(ar_features) ~= target_len
+    mean_value = nanmean(ar_features);  % Use mean value
+    ar_features = padarray(ar_features, [0, target_len - length(ar_features)], mean_value, 'post');
 end
+
+% Combine extracted features into a single output
+eeg_features = [band_ratios; entropy; peak_freqs; band_entropies; time_freq_features'; ar_features];
