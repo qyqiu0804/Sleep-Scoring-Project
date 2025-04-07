@@ -27,9 +27,16 @@ for k = range
     EOG_filtered_signal = preprocess_EOG(EOG_signal, fs_eog);
     num_observations = size(eeg_features,2); % get number of training examples out of eeg processing
     eog_features = extract_features_eog(EOG_filtered_signal, fs_eog, num_observations); % last eog obs are cut off to match eeg rows
+    %% EMG Processing
+    EMG_channel = find(ismember(hdr.label,'EMG')); 
+    EMG_signal = record(EMG_channel, :);
+    % Create time vector for EMG signal (in seconds)
+    fs_emg = hdr.samples(EMG_channel) ;
+    EMG_filtered_signal = preprocess_EMG(EMG_signal, fs_emg);
+    emg_features = extract_features_emg(EMG_filtered_signal, fs_emg, num_observations); % last emg obs are cut off to match eeg rows
     
     %% Combine features that we will use in the classifier
-    combined_features = [eeg_features;eog_features]; % Stack features
+    combined_features = [eeg_features;eog_features;emg_features]; % Stack features
     % Align with sleep stages
     stages_at_epoch = stages(1:epochLength:end);
     num_epochs = length(stages_at_epoch);
