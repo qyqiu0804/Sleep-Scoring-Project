@@ -34,8 +34,16 @@ for k = range
     EMG_filtered_signal = preprocess_EMG(EMG_signal, fs_emg);
     emg_features = extract_features_emg(EMG_filtered_signal, fs_emg, num_observations); % last emg obs are cut off to match eeg rows
     
+     %% ECG Processing
+    ECG_channel = find(ismember(hdr.label,'ECG')); 
+    ECG_signal = record(ECG_channel, :);
+    % Create time vector for ECG signal (in seconds)
+    fs_ecg = hdr.samples(ECG_channel) ;
+    ECG_filtered_signal = preprocess_ECG(ECG_signal, fs_ecg);
+    ecg_features = extract_features_ecg(ECG_filtered_signal, fs_emg, num_observations); % last emg obs are cut off to match eeg rows
     %% Combine features
-    combined_features = [eeg_features; eog_features; emg_features];
+
+    combined_features = [eeg_features; eog_features; emg_features;ecg_features];
 
     %% -Align with sleep stages
     stages_at_epoch = stages(1:epochLength:end);
