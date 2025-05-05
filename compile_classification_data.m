@@ -39,7 +39,7 @@ for k = range
     ECG_signal = record(ECG_channel, :);
     % Create time vector for ECG signal (in seconds)
     fs_ecg = hdr.samples(ECG_channel) ;
-    ECG_filtered_signal = preprocess_ECG(ECG_signal, fs_ecg);
+    ECG_filtered_signal = preprocess_ECG(ECG_signal, fs_ecg,'wavelet');
     ecg_features = extract_features_ecg(ECG_filtered_signal, fs_emg, num_observations); % last emg obs are cut off to match eeg rows
     %% Combine features
 
