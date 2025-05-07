@@ -2,8 +2,8 @@ function filtered_signal = preprocess_EMG(EMG_signal, fs)
     % Preprocesses EMG signal by applying high-pass filtering and RMS smoothing
     %inline with standards for EMG data
 
-    % Step 1: High-pass Filter at 20 Hz
-    [high_b, high_a] = butter(4, 20 / (fs / 2), 'high');
+    % Step 1: High-pass Filter at 10 Hz
+    [high_b, high_a] = butter(4, 10 / (fs / 2), 'high');
     EMG_highpassed = filtfilt(high_b, high_a, EMG_signal);
 
     % Step 2: RMS Filter using a 100 ms window
