@@ -47,11 +47,12 @@ function ar_features = extract_ar_features(EEG_signal, fs)
     max_PSD_alpha = max(PSD_alpha);
     max_PSD_beta = max(PSD_beta);
 
-    % ===== Collect AR coefficients into row vectors =====
-    delta_ar = ar_coeffs.delta(:)';
-    theta_ar = ar_coeffs.theta(:)';
-    alpha_ar = ar_coeffs.alpha(:)';
-    beta_ar = ar_coeffs.beta(:)';
+% ===== Remove the first AR coefficient (always 1) =====
+delta_ar = ar_coeffs.delta(2:end);
+theta_ar = ar_coeffs.theta(2:end);
+alpha_ar = ar_coeffs.alpha(2:end);
+beta_ar = ar_coeffs.beta(2:end);
+
 
     % ===== Concatenate all AR coefficients and PSD values =====
     ar_features = [delta_ar, theta_ar, alpha_ar, beta_ar, ...
