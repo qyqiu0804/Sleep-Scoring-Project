@@ -20,34 +20,21 @@ function ar_features = extract_ar_features(EEG_signal, fs)
     [beta_b, beta_a] = butter(filter_order, beta_band / (fs / 2), 'bandpass');
     beta_signal = filtfilt(beta_b, beta_a, EEG_signal);
 
-    % ===== Automatically select AR model order using AIC =====
-    max_order = 30;
-    aic_values = zeros(1, max_order);
-    N = length(EEG_signal);
-
-    for order_test = 1:max_order
-        [~, E] = aryule(EEG_signal, order_test);
-        if isnan(E) || E <= 0
-            continue;
-        end
-        aic_values(order_test) = N * log(E) + 2 * order_test;
-    end
-
-    [~, best_order] = min(aic_values);
-    best_order = min(max(best_order, 4), 15);  % Keep order between 4 and 15
+    % ===== Fixed AR model order =====
+    fixed_order = 6;
 
     % ===== Generate AR coefficients for each frequency band =====
-    ar_coeffs.delta = aryule(delta_signal, best_order);
-    ar_coeffs.theta = aryule(theta_signal, best_order);
-    ar_coeffs.alpha = aryule(alpha_signal, best_order);
-    ar_coeffs.beta = aryule(beta_signal, best_order);
+    ar_coeffs.delta = aryule(delta_signal, fixed_order);
+    ar_coeffs.theta = aryule(theta_signal, fixed_order);
+    ar_coeffs.alpha = aryule(alpha_signal, fixed_order);
+    ar_coeffs.beta = aryule(beta_signal, fixed_order);
 
     % ===== Compute PSD values using AR model =====
     Nfft = 1024;
-    [PSD_delta, F_delta] = pyulear(ar_coeffs.delta, best_order, Nfft, fs);
-    [PSD_theta, F_theta] = pyulear(ar_coeffs.theta, best_order, Nfft, fs);
-    [PSD_alpha, F_alpha] = pyulear(ar_coeffs.alpha, best_order, Nfft, fs);
-    [PSD_beta, F_beta] = pyulear(ar_coeffs.beta, best_order, Nfft, fs);
+    [PSD_delta, ~] = pyulear(ar_coeffs.delta, fixed_order, Nfft, fs);
+    [PSD_theta, ~] = pyulear(ar_coeffs.theta, fixed_order, Nfft, fs);
+    [PSD_alpha, ~] = pyulear(ar_coeffs.alpha, fixed_order, Nfft, fs);
+    [PSD_beta, ~] = pyulear(ar_coeffs.beta, fixed_order, Nfft, fs);
 
     % ===== Take mean and max PSD values =====
     mean_PSD_delta = mean(PSD_delta);
@@ -60,33 +47,11 @@ function ar_features = extract_ar_features(EEG_signal, fs)
     max_PSD_alpha = max(PSD_alpha);
     max_PSD_beta = max(PSD_beta);
 
-    % ===== Pad AR coefficients to same length =====
-    max_ar_len = max([length(ar_coeffs.delta), length(ar_coeffs.theta), length(ar_coeffs.alpha), length(ar_coeffs.beta)]);
-
-    % Pad with NaN only if the length is shorter than max_ar_len
-    if length(ar_coeffs.delta) < max_ar_len
-        delta_ar = padarray(ar_coeffs.delta(:)', [0, max_ar_len - length(ar_coeffs.delta)], NaN, 'post');
-    else
-        delta_ar = ar_coeffs.delta(:)';
-    end
-
-    if length(ar_coeffs.theta) < max_ar_len
-        theta_ar = padarray(ar_coeffs.theta(:)', [0, max_ar_len - length(ar_coeffs.theta)], NaN, 'post');
-    else
-        theta_ar = ar_coeffs.theta(:)';
-    end
-
-    if length(ar_coeffs.alpha) < max_ar_len
-        alpha_ar = padarray(ar_coeffs.alpha(:)', [0, max_ar_len - length(ar_coeffs.alpha)], NaN, 'post');
-    else
-        alpha_ar = ar_coeffs.alpha(:)';
-    end
-
-    if length(ar_coeffs.beta) < max_ar_len
-        beta_ar = padarray(ar_coeffs.beta(:)', [0, max_ar_len - length(ar_coeffs.beta)], NaN, 'post');
-    else
-        beta_ar = ar_coeffs.beta(:)';
-    end
+    % ===== Collect AR coefficients into row vectors =====
+    delta_ar = ar_coeffs.delta(:)';
+    theta_ar = ar_coeffs.theta(:)';
+    alpha_ar = ar_coeffs.alpha(:)';
+    beta_ar = ar_coeffs.beta(:)';
 
     % ===== Concatenate all AR coefficients and PSD values =====
     ar_features = [delta_ar, theta_ar, alpha_ar, beta_ar, ...
@@ -96,13 +61,11 @@ function ar_features = extract_ar_features(EEG_signal, fs)
     % ===== Convert to row vector =====
     ar_features = ar_features(:)';
 
-    % ===== Pad to consistent length (optional) =====
-    % Ensure consistent feature vector length for classifier input
-    max_len = 50;  % Adjust based on the model requirement
-
-    if length(ar_features) < max_len
-        % Only pad when the length is less than max_len
-        ar_features = padarray(ar_features, [0, max_len - length(ar_features)], NaN, 'post');
+    % ===== Pad or truncate to consistent length =====
+    fixed_len = 32;  % 4 bands × (6 AR coeffs) + 8 PSD features = 32
+    if length(ar_features) < fixed_len
+        ar_features = padarray(ar_features, [0, fixed_len - length(ar_features)], NaN, 'post');
+    elseif length(ar_features) > fixed_len
+        ar_features = ar_features(1:fixed_len);
     end
-
 end
