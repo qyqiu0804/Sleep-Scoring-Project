@@ -1,5 +1,5 @@
-function [X,Y] = compile_classification_data(datadir, edfFiles, xmlFiles, eeg_band_freqs, range)
-X = []; Y = [];
+function [X,Y,subject_bounds] = compile_classification_data(datadir, edfFiles, xmlFiles, eeg_band_freqs, range)
+X = []; Y = []; subject_bounds = [];
 
 for k = range
     %% Read EDF and XML
@@ -39,7 +39,7 @@ for k = range
     ECG_signal = record(ECG_channel, :);
     % Create time vector for ECG signal (in seconds)
     fs_ecg = hdr.samples(ECG_channel) ;
-    ECG_filtered_signal = preprocess_ECG(ECG_signal, fs_ecg,'wavelet');
+    ECG_filtered_signal = preprocess_ECG(ECG_signal, fs_ecg);
     ecg_features = extract_features_ecg(ECG_filtered_signal, fs_emg, num_observations); % last emg obs are cut off to match eeg rows
     %% Combine features
 
@@ -53,4 +53,8 @@ for k = range
     %% -ave to master matrix
     X = [X; combined_features(:,1:len)'];
     Y = [Y; stages_at_epoch(1:len)'];
+
+    %% Track bounds (cumulative sum of samples), useful to compute the LOSO validation
+    subject_bounds = [subject_bounds; size(X, 1)];
 end
+Y(Y==1) = 2;

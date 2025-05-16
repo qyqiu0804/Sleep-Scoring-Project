@@ -17,7 +17,7 @@ num = length(edfFiles);
 
 %% training
 % go over the training portion, and make big X and Y vectors
-[X, Y] = compile_classification_data(datadir, edfFiles, xmlFiles,band_freqs,1:num);
+[X, Y, ~] = compile_classification_data(datadir, edfFiles, xmlFiles,band_freqs,1:num);
 
 %model = fitcknn(X,Y,'NumNeighbors',22,'Standardize',1);
 model =fitcknn(X,Y,'NumNeighbors',12,'Distance','cityblock','DistanceWeight','squaredinverse','Standardize',true);

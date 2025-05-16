@@ -9,7 +9,7 @@ xmlFiles = xmlFiles(~startsWith({xmlFiles.name}, '~$'));
 band_freqs = [0.6,1; 0.5,4; 4,8; 8,13; 11,16; 13,30];
 
 num = length(edfFiles);
-[X, Y] = compile_classification_data(datadir, edfFiles, xmlFiles, band_freqs, 1:num);
+[X, Y, ~] = compile_classification_data(datadir, edfFiles, xmlFiles, band_freqs, 1:num);
 
 % Step 2: Standardize before PCA
 X = normalize(X);
