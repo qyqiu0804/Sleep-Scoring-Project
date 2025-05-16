@@ -17,7 +17,7 @@ band_freqs = [0.6,1; 0.5,4; 4,8; 8,13; 11,16; 13,30];
 num = length(edfFiles);
 [X, Y, subject_bounds] = compile_classification_data(datadir, edfFiles, xmlFiles, band_freqs, 1:num);
 
-% Apply selected features (computed through the file "select_features")
+% Apply selected features (computed through the file "classify_with_selection")
 selected = [1 2 3 4 10 11 12 14 19 24 56 57 59 63 69 72 75 84 86];
 X_selected = X(:, selected);
 
